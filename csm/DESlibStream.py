@@ -20,7 +20,7 @@ measure = balanced_accuracy_score
 
 class DESlibStream(BaseEstimator, ClassifierMixin):
     """
-
+        note
     """
 
     def __init__(

@@ -32,14 +32,13 @@ class DESlibStream(BaseEstimator, ClassifierMixin):
     """
 
     def __init__(
-        self, ensemble_size=3, alpha=0.05, desMethod="KNORAE", oversampled=True, modification="None"
+        self, ensemble_size=3, alpha=0.05, desMethod="KNORAE", oversampled=True
     ):
         """Initialization."""
         self.ensemble_size = ensemble_size
         self.alpha = alpha
         self.desMethod = desMethod
         self.oversampled = oversampled
-        self.modification = modification
 
     def set_base_clf(self, base_clf=neighbors.KNeighborsClassifier()):
         """Establish base classifier."""
@@ -162,44 +161,6 @@ class DESlibStream(BaseEstimator, ClassifierMixin):
             des.fit(X_dsel, y_dsel)
             prediction = des.predict(X)
 
-        # if self.modification == "None":
-        #     prediction = des.predict(X)
-
-        # elif self.modification == "Abstaining":
-        #     # get pools selected by DS
-        #     distance = self.euclidean_distance(X, X_dsel)
-        #     region = self.region_of_competence(distance, n_neighbors=7)
-        #     competence = des.estimate_competence(X, region)
-        #     ds_pool = des.select(competence)
-        #
-        #     # abstaining based on proba
-        #     esm = self.ensemble_support_matrix(X).T
-        #     max_esm = np.max(esm, axis=0)
-        #     ds_pool[max_esm < 0.6] = False
-        #
-        #     #prediction
-        #     predictions = np.array([member_clf.predict(X) for member_clf in self.ensemble_]).T
-        #     ds_maj = np.zeros([X.shape[0],])
-        #     for i, instace in enumerate(predictions):
-        #         pool = ds_pool[i]
-        #         proba = max_esm[i]
-        #         ds_maj[i] = np.argmax(np.bincount(instace[pool==True]))
-        #     prediction = ds_maj.astype(int)
-        #
-        # elif self.modification == "Manual":
-        #     # get pools selected by DS
-        #     eucl_distance = self.euclidean_distance(X, X_dsel)
-        #     region = self.region_of_competence(eucl_distance, n_neighbors=7)
-        #     competence = des.estimate_competence(X, region)
-        #     ds_pool = des.select(competence)
-        #
-        #     # prediction
-        #     predictions = np.array([member_clf.predict(X) for member_clf in self.ensemble_]).T
-        #     ds_maj = np.zeros([X.shape[0], ])
-        #     for i, instace in enumerate(predictions):
-        #         pool = ds_pool[i]
-        #         ds_maj[i] = np.argmax(np.bincount(instace[pool == True]))
-        #     prediction = ds_maj.astype(int)
         return prediction
 
     def score(self, X, y):

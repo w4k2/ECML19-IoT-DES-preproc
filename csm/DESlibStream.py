@@ -20,14 +20,6 @@ measure = balanced_accuracy_score
 
 class DESlibStream(BaseEstimator, ClassifierMixin):
     """
-    DumbDelayPool.
-
-    Opis niezwykle istotnego klasyfikatora
-
-    References
-    ----------
-    .. [1] A. Kowalski, B. Nowak, "Bardzo ważna praca o klasyfikatorze
-    niezwykle istotnym dla przetrwania gatunku ludzkiego."
 
     """
 

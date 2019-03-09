@@ -12,7 +12,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from deslib.des import KNORAE, KNORAU, DESKNN, DESClustering
 from deslib.dcs import Rank, LCA
-from imblearn.over_sampling import RandomOverSampler, SMOTE
+from imblearn.over_sampling import RandomOverSampler, SMOTE, SVMSMOTE, BorderlineSMOTE, ADASYN
 from scipy.spatial import distance
 
 measure = balanced_accuracy_score
@@ -93,7 +93,7 @@ class DESlibStream(BaseEstimator, ClassifierMixin):
         train_X, train_y = self.remove_outliers(X, y)
 
         if self.oversampled:
-            ros = RandomOverSampler(random_state=42)
+            ros = SMOTE(random_state=42)
             train_X, train_y = ros.fit_resample(train_X, train_y)
 
         # Testing all models
@@ -132,7 +132,7 @@ class DESlibStream(BaseEstimator, ClassifierMixin):
         y_dsel = self.previous_y
 
         if self.oversampled:
-            ros = RandomOverSampler(random_state=42)
+            ros = SMOTE(random_state=42)
             X_dsel, y_dsel = ros.fit_resample(X_dsel, y_dsel)
 
         if self.desMethod == "KNORAE":

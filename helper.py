@@ -27,8 +27,9 @@ p = 0.05
 
 def clfs():
     return {
-        "Basic": csm.Dumb(ensemble_size=2),
-        # "KNN": csm.DESlibStream(desMethod="KNN", oversampled=False, ensemble_size=20),
+        # "Basic": csm.Dumb(ensemble_size=2),
+        "KNNov": csm.DESlibStream(desMethod="KNN", oversampled=True, ensemble_size=3),
+        "KNN": csm.DESlibStream(desMethod="KNN", oversampled=False, ensemble_size=3),
         # "Clustering": csm.DESlibStream(desMethod="Clustering", oversampled=False, ensemble_size=20),
         # "KNORAE": csm.DESlibStream(desMethod="KNORAE", oversampled=False, ensemble_size=20),
         # "KNORAU": csm.DESlibStream(desMethod="KNORAU", oversampled=False, ensemble_size=20),

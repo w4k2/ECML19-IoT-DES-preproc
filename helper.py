@@ -29,7 +29,7 @@ def clfs():
     return {
         # "Basic": csm.Dumb(ensemble_size=2),
         "KNNov": csm.DESlibStream(desMethod="KNN", oversampled=True, ensemble_size=3),
-        "KNN": csm.DESlibStream(desMethod="KNN", oversampled=False, ensemble_size=3),
+        # "KNN": csm.DESlibStream(desMethod="KNN", oversampled=False, ensemble_size=3),
         # "Clustering": csm.DESlibStream(desMethod="Clustering", oversampled=False, ensemble_size=20),
         # "KNORAE": csm.DESlibStream(desMethod="KNORAE", oversampled=False, ensemble_size=20),
         # "KNORAU": csm.DESlibStream(desMethod="KNORAU", oversampled=False, ensemble_size=20),
@@ -37,6 +37,12 @@ def clfs():
         # "Clusteringov": csm.DESlibStream(desMethod="Clustering", oversampled=True, ensemble_size=20),
         # "KNORAEov": csm.DESlibStream(desMethod="KNORAE", oversampled=True, ensemble_size=20),
         # "KNORAUov": csm.DESlibStream(desMethod="KNORAU", oversampled=True, ensemble_size=20),
+    }
+
+def keel_clfs():
+    return {
+        # "Basicov": csm.DESlibKEEL(oversampled=True),
+        "Basic": csm.DESlibKEEL(oversampled=False),
     }
 
 
@@ -106,5 +112,9 @@ def datImport(filename):
     y = array[:,-1:]
     y = np.reshape(y, (y.shape[0],))
     y[y=="negative"] = 0
+    y[y == " negative"] = 0
+    y[y == " negative    "] = 0
     y[y=="positive"] = 1
+    y[y == " positive"] = 1
+    y=y.astype('int')
     return X, y

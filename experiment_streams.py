@@ -35,6 +35,7 @@ def worker(i, stream_n):
         stream.reset()
 
     np.save("results/experiment_streams/%s" % stream, results)
+    print(results)
 
 
 jobs = []

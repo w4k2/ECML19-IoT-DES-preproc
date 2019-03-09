@@ -38,7 +38,7 @@ score_points = list(range(chunk_size, chunk_size * n_chunks, chunk_size))
 def gather_and_present(title, filename, streams, what):
     results_hypercube = np.zeros((len(streams), len(clfs), n_chunks - 1))
     for i, stream_n in enumerate(streams):
-        results = np.load("results/experiment/%s.npy" % stream_n)
+        results = np.load("results/experiment_streams/%s.npy" % stream_n)
         results_hypercube[i] = results
 
     overall = np.mean(results_hypercube, axis=0)

@@ -27,7 +27,7 @@ p = 0.05
 
 def clfs():
     return {
-        "Basic": csm.MDE(decision="min", ensemble_size=20),
+        "Basic": csm.Dumb(ensemble_size=2),
         # "KNN": csm.DESlibStream(desMethod="KNN", oversampled=False, ensemble_size=20),
         # "Clustering": csm.DESlibStream(desMethod="Clustering", oversampled=False, ensemble_size=20),
         # "KNORAE": csm.DESlibStream(desMethod="KNORAE", oversampled=False, ensemble_size=20),

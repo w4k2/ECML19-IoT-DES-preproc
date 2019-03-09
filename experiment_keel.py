@@ -1,7 +1,10 @@
 import helper as h
 import numpy as np
 import multiprocessing
-from sklearn.model_selection import train_test_split
+from sklearn.model_selection import RepeatedStratifiedKFold, train_test_split
+
+from sklearn.ensemble import BaggingClassifier
+from sklearn import neighbors
 
 # prepare data
 keel_names = open("KEEL_names.txt", "r").read().split("\n")[:-1]
@@ -20,7 +23,7 @@ def worker(i, data_n):
     """worker function"""
     X = keel_Xs[data_n]
     y = keel_ys[data_n]
-    results = np.zeros((len(clfs), 1))
+    results = np.zeros((len(clfs), 10))
     name = keel_names[i][:-4]
 
     for j, clfn in enumerate(clfs):
@@ -30,21 +33,26 @@ def worker(i, data_n):
             % (j + 1, len(clfs), i + 1, len(keel_names))
         )
 
-        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5,
-                                                            random_state=43)
+        # X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5,
+        #                                                     random_state=42)
 
-        clf.fit(X_train, y_train)
-        score = clf.score(X_test, y_test)
-        print(score)
+        rskf = RepeatedStratifiedKFold(n_splits=2, n_repeats=5, random_state = 42)
+
+        scores = []
+        for train_index, test_index in rskf.split(X, y):
+            X_train, X_test = X[train_index], X[test_index]
+            y_train, y_test = y[train_index], y[test_index]
+
+            clf.fit(X_train, y_train)
+            score = clf.score(X_test, y_test)
+            scores.append(score)
 
         print(
             "Done clf %i/%i of keel data %i/%i" % (j + 1, len(clfs), i + 1, len(keel_names))
         )
-
-        results[j, :] = score
+        results[j, :] = scores
 
     np.save("results/experiment_keel/%s" % name, results)
-    print(results)
 
 
 jobs = []

@@ -41,8 +41,16 @@ def clfs():
 
 def keel_clfs():
     return {
-        # "Basicov": csm.DESlibKEEL(oversampled=True),
-        "Basic": csm.DESlibKEEL(oversampled=False),
+        "Basic": csm.DESlibKEEL(oversampled=False, desMethod="None"),
+        "KNORAE": csm.DESlibKEEL(oversampled=False, desMethod="KNORAE"),
+        "KNORAU": csm.DESlibKEEL(oversampled=False, desMethod="KNORAU"),
+        "KNN": csm.DESlibKEEL(oversampled=False, desMethod="KNN"),
+        "Clustering": csm.DESlibKEEL(oversampled=False, desMethod="Clustering"),
+        "Basicov": csm.DESlibKEEL(oversampled=True, desMethod="None"),
+        "KNORAEov": csm.DESlibKEEL(oversampled=True, desMethod="KNORAE"),
+        "KNORAUov": csm.DESlibKEEL(oversampled=True, desMethod="KNORAU"),
+        "KNNov": csm.DESlibKEEL(oversampled=True, desMethod="KNN"),
+        "Clusteringov": csm.DESlibKEEL(oversampled=True, desMethod="Clustering"),
     }
 
 

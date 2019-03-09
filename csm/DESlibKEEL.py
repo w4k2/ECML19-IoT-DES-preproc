@@ -15,6 +15,7 @@ from deslib.des import KNORAE, KNORAU, DESKNN, DESClustering
 from deslib.dcs import Rank, LCA
 from imblearn.over_sampling import RandomOverSampler, SMOTE, SVMSMOTE, BorderlineSMOTE, ADASYN
 from scipy.spatial import distance
+from sklearn.tree import DecisionTreeClassifier
 
 measure = balanced_accuracy_score
 
@@ -35,9 +36,9 @@ class DESlibKEEL(BaseEstimator, ClassifierMixin):
     def set_base_clf(self, base_clf=BaggingClassifier(
                                 neighbors.KNeighborsClassifier(),
                                 n_estimators=10,
-                                max_samples=1.0, max_features=0.5,
-                                bootstrap_features=False, random_state=432,
-                                bootstrap=False)):
+                                max_samples=0.5, max_features=1.0,
+                                bootstrap_features=False, random_state=42,
+                                bootstrap=True)):
         """Establish base classifier."""
         self._base_clf = base_clf
 
@@ -51,12 +52,14 @@ class DESlibKEEL(BaseEstimator, ClassifierMixin):
         self.X_ = X
         self.y_ = y
 
+        self.X_dsel = X
+        self.y_dsel = y
+
         if self.oversampled:
             ros = SMOTE(random_state=42)
             X, y = ros.fit_resample(X, y)
 
         self._base_clf.fit(X, y)
-
         # Return the classifier
         return self
 
@@ -71,28 +74,29 @@ class DESlibKEEL(BaseEstimator, ClassifierMixin):
         if X.shape[1] != self.X_.shape[1]:
             raise ValueError("number of features does not match")
 
-        # X_dsel = self.previous_X
-        # y_dsel = self.previous_y
-        #
-        # if self.oversampled:
-        #     ros = SMOTE(random_state=42)
-        #     X_dsel, y_dsel = ros.fit_resample(X_dsel, y_dsel)
-        #
-        # if self.desMethod == "KNORAE":
-        #     des = KNORAE(self.ensemble_, random_state=42)
-        # elif self.desMethod == "KNORAU":
-        #     des = KNORAU(self.ensemble_, random_state=42)
-        # elif self.desMethod == "KNN":
-        #     des = DESKNN(self.ensemble_, random_state=42)
-        # elif self.desMethod == "Clustering":
-        #     des = DESClustering(self.ensemble_, random_state=42)
-        # else:
-        #     des = KNORAE(self.ensemble_, random_state=42)
-        #
-        # des.fit(X_dsel, y_dsel)
-        # prediction = des.predict(X)
+        if self.oversampled:
+            ros = SMOTE(random_state=42)
+            self.X_dsel, self.y_dsel = ros.fit_resample(self.X_dsel, self.y_dsel)
 
-        prediction = self._base_clf.predict(X)
+        if self.desMethod == "KNORAE":
+            des = KNORAE(self._base_clf.estimators_, random_state=42)
+            des.fit(self.X_, self.y_)
+            prediction = des.predict(X)
+        elif self.desMethod == "KNORAU":
+            des = KNORAU(self._base_clf.estimators_, random_state=42)
+            des.fit(self.X_dsel, self.y_dsel)
+            prediction = des.predict(X)
+        elif self.desMethod == "KNN":
+            des = DESKNN(self._base_clf.estimators_, random_state=42)
+            des.fit(self.X_dsel, self.y_dsel)
+            prediction = des.predict(X)
+        elif self.desMethod == "Clustering":
+            des = DESClustering(self._base_clf.estimators_, random_state=42)
+            des.fit(self.X_dsel, self.y_dsel)
+            prediction = des.predict(X)
+        else:
+            prediction = self._base_clf.predict(X)
+
 
         return prediction
 

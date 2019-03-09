@@ -1,5 +1,6 @@
 import csm
 import numpy as np
+import pandas as pd
 from scipy.stats import ranksums
 
 p = 0.05
@@ -96,3 +97,13 @@ def tabrow(what, res):
             + " \\\\"
         )
     )
+
+def datImport(filename):
+    df = pd.read_csv('KEEL_data/' + filename, header=None, sep=",", comment="@")
+    array = df.values
+    X = array[:,:-1]
+    y = array[:,-1:]
+    y = np.reshape(y, (y.shape[0],))
+    y[y=="negative"] = 0
+    y[y=="positive"] = 1
+    return X, y

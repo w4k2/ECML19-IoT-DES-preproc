@@ -23,7 +23,9 @@ def worker(i, data_n):
     """worker function"""
     X = keel_Xs[data_n]
     y = keel_ys[data_n]
-    results = np.zeros((len(clfs), 10))
+    results_ba = np.zeros((len(clfs), 10))
+    results_f1 = np.zeros((len(clfs), 10))
+    results_gmean = np.zeros((len(clfs), 10))
     name = keel_names[i][:-4]
 
     for j, clfn in enumerate(clfs):
@@ -38,21 +40,29 @@ def worker(i, data_n):
 
         rskf = RepeatedStratifiedKFold(n_splits=2, n_repeats=5, random_state = 42)
 
-        scores = []
+        scores_ba = []
+        scores_f1 = []
+        scores_gmean = []
         for train_index, test_index in rskf.split(X, y):
             X_train, X_test = X[train_index], X[test_index]
             y_train, y_test = y[train_index], y[test_index]
 
             clf.fit(X_train, y_train)
-            score = clf.score(X_test, y_test)
-            scores.append(score)
+            score_ba, score_f1, score_gmean = clf.score(X_test, y_test)
+            scores_ba.append(score_ba)
+            scores_f1.append(score_f1)
+            scores_gmean.append(score_gmean)
 
         print(
             "Done clf %i/%i of keel data %i/%i" % (j + 1, len(clfs), i + 1, len(keel_names))
         )
-        results[j, :] = scores
+        results_ba[j, :] = scores_ba
+        results_f1[j, :] = scores_f1
+        results_gmean[j, :] = scores_gmean
 
-    np.save("results/experiment_keel/%s" % name, results)
+    np.save("results/experiment_keel/%s_ba" % name, results_ba)
+    np.save("results/experiment_keel/%s_f1" % name, results_f1)
+    np.save("results/experiment_keel/%s_gmean" % name, results_gmean)
 
 
 jobs = []

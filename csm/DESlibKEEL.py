@@ -16,8 +16,11 @@ from deslib.dcs import Rank, LCA
 from imblearn.over_sampling import RandomOverSampler, SMOTE, SVMSMOTE, BorderlineSMOTE, ADASYN
 from scipy.spatial import distance
 from sklearn.tree import DecisionTreeClassifier
+from imblearn.metrics  import geometric_mean_score
 
-measure = balanced_accuracy_score
+ba = balanced_accuracy_score
+f1 = f1_score
+gmean = geometric_mean_score
 
 
 class DESlibKEEL(BaseEstimator, ClassifierMixin):
@@ -35,7 +38,7 @@ class DESlibKEEL(BaseEstimator, ClassifierMixin):
 
     def set_base_clf(self, base_clf=BaggingClassifier(
                                 neighbors.KNeighborsClassifier(),
-                                n_estimators=10,
+                                n_estimators=100,
                                 max_samples=0.5, max_features=1.0,
                                 bootstrap_features=False, random_state=42,
                                 bootstrap=True)):
@@ -56,8 +59,13 @@ class DESlibKEEL(BaseEstimator, ClassifierMixin):
         self.y_dsel = y
 
         if self.oversampled:
-            ros = SMOTE(random_state=42)
-            X, y = ros.fit_resample(X, y)
+            smote = SMOTE(random_state=42)
+            rand = RandomOverSampler(random_state=42)
+            try:
+                X, y = smote.fit_resample(X, y)
+            except ValueError:
+                print("Leci random")
+                X, y = rand.fit_resample(X, y)
 
         self._base_clf.fit(X, y)
         # Return the classifier
@@ -75,8 +83,12 @@ class DESlibKEEL(BaseEstimator, ClassifierMixin):
             raise ValueError("number of features does not match")
 
         if self.oversampled:
-            ros = SMOTE(random_state=42)
-            self.X_dsel, self.y_dsel = ros.fit_resample(self.X_dsel, self.y_dsel)
+            smote = SMOTE(random_state=42)
+            rand = RandomOverSampler(random_state=42)
+            try:
+                self.X_dsel, self.y_dsel = smote.fit_resample(self.X_dsel, self.y_dsel)
+            except ValueError:
+                self.X_dsel, self.y_dsel = rand.fit_resample(self.X_dsel, self.y_dsel)
 
         if self.desMethod == "KNORAE":
             des = KNORAE(self._base_clf.estimators_, random_state=42)
@@ -101,4 +113,4 @@ class DESlibKEEL(BaseEstimator, ClassifierMixin):
         return prediction
 
     def score(self, X, y):
-        return measure(y, self.predict(X))
+        return ba(y, self.predict(X)), f1(y, self.predict(X)), gmean(y, self.predict(X))

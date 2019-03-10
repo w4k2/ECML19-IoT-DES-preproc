@@ -3,20 +3,14 @@ Dumb Delay Pool.
 """
 
 from sklearn.base import BaseEstimator, ClassifierMixin
-from sklearn.utils.validation import check_X_y, check_array, check_is_fitted
-from sklearn.utils.multiclass import _check_partial_fit_first_call
-from sklearn import base
+from sklearn.utils.validation import check_X_y, check_array
 from sklearn.ensemble import BaggingClassifier
 from sklearn import neighbors
 from sklearn.metrics import f1_score, balanced_accuracy_score
-import numpy as np
-import matplotlib.pyplot as plt
 from deslib.des import KNORAE, KNORAU, DESKNN, DESClustering
-from deslib.dcs import Rank, LCA
 from imblearn.over_sampling import RandomOverSampler, SMOTE, SVMSMOTE, BorderlineSMOTE, ADASYN
-from scipy.spatial import distance
-from sklearn.tree import DecisionTreeClassifier
 from imblearn.metrics  import geometric_mean_score
+from smote_variants import Safe_Level_SMOTE
 
 ba = balanced_accuracy_score
 f1 = f1_score

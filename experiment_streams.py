@@ -4,6 +4,9 @@ import numpy as np
 import helper as h
 from tqdm import tqdm
 import multiprocessing
+import logging
+
+logging.getLogger("smote_variants").setLevel(logging.CRITICAL)
 
 # Select streams and methods
 streams = h.streams()
@@ -13,7 +16,9 @@ clfs = h.clfs()
 def worker(i, stream_n):
     """worker function"""
     stream = streams[stream_n]
-    results = np.zeros((len(clfs), stream.n_chunks - 1))
+    results_ba = np.zeros((len(clfs), stream.n_chunks - 1))
+    results_f1 = np.zeros((len(clfs), stream.n_chunks - 1))
+    results_gmean = np.zeros((len(clfs), stream.n_chunks - 1))
 
     for j, clfn in enumerate(clfs):
         clf = clfs[clfn]
@@ -30,12 +35,11 @@ def worker(i, stream_n):
             "Done clf %i/%i of stream %i/%i" % (j + 1, len(clfs), i + 1, len(streams))
         )
 
-        results[j, :] = learner.scores
+        results_ba[j, :] = learner.scores
 
         stream.reset()
 
-    np.save("results/experiment_streams/%s" % stream, results)
-    print(results)
+    np.save("results/experiment_streams/%s_ba" % stream, results_ba)
 
 
 jobs = []

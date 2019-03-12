@@ -8,14 +8,19 @@ from sklearn.utils.multiclass import _check_partial_fit_first_call
 from sklearn import base
 from sklearn import neighbors
 from sklearn.metrics import f1_score, balanced_accuracy_score
+from imblearn.metrics import  geometric_mean_score
 import numpy as np
 import matplotlib.pyplot as plt
 from deslib.des import KNORAE, KNORAU, DESKNN, DESClustering
 from deslib.dcs import Rank, LCA
 from imblearn.over_sampling import RandomOverSampler, SMOTE, SVMSMOTE, BorderlineSMOTE, ADASYN
 from scipy.spatial import distance
+from smote_variants import Safe_Level_SMOTE
+from sklearn.tree import DecisionTreeClassifier
 
-measure = balanced_accuracy_score
+ba = balanced_accuracy_score
+f1 = f1_score
+gmean = geometric_mean_score
 
 
 class DESlibStream(BaseEstimator, ClassifierMixin):
@@ -24,15 +29,15 @@ class DESlibStream(BaseEstimator, ClassifierMixin):
     """
 
     def __init__(
-        self, ensemble_size=3, alpha=0.05, desMethod="KNORAE", oversampled=True
+        self, ensemble_size=10, alpha=0.05, desMethod="KNORAE", oversampler="SMOTE"
     ):
         """Initialization."""
         self.ensemble_size = ensemble_size
         self.alpha = alpha
         self.desMethod = desMethod
-        self.oversampled = oversampled
+        self.oversampler = oversampler
 
-    def set_base_clf(self, base_clf=neighbors.KNeighborsClassifier()):
+    def set_base_clf(self, base_clf=DecisionTreeClassifier()):
         """Establish base classifier."""
         self._base_clf = base_clf
 
@@ -91,13 +96,42 @@ class DESlibStream(BaseEstimator, ClassifierMixin):
         self.previous_y = self.y_
 
         train_X, train_y = self.remove_outliers(X, y)
+        # train_X, train_y = X, y
 
-        if self.oversampled:
-            ros = SMOTE(random_state=42)
-            train_X, train_y = ros.fit_resample(train_X, train_y)
+
+        unique, counts = np.unique(train_y, return_counts=True)
+
+        k_neighbors = 5
+        if counts[0]-1 < 5:
+            k_neighbors = counts[0] - 1
+
+        if self.oversampler == "SMOTE" and k_neighbors>0:
+            smote = SMOTE(random_state=42, k_neighbors=k_neighbors)
+            train_X, train_y = smote.fit_resample(train_X, train_y)
+        elif self.oversampler == "svmSMOTE" and k_neighbors>0:
+            try:
+                svmSmote = SVMSMOTE(random_state=42, k_neighbors=k_neighbors)
+                train_X, train_y = svmSmote.fit_resample(train_X, train_y)
+            except ValueError:
+                pass
+        elif self.oversampler == "borderline1" and k_neighbors>0:
+            borderlineSmote1 = BorderlineSMOTE(random_state=42, k_neighbors=k_neighbors, kind='borderline-1')
+            train_X, train_y = borderlineSmote1.fit_resample(train_X, train_y)
+        elif self.oversampler == "borderline2" and k_neighbors>0:
+            borderlineSmote2 = BorderlineSMOTE(random_state=42, k_neighbors=k_neighbors, kind='borderline-2')
+            train_X, train_y = borderlineSmote2.fit_resample(train_X, train_y)
+        elif self.oversampler == "ADASYN" and k_neighbors>0:
+            try:
+                adasyn = ADASYN(random_state=42, n_neighbors=k_neighbors)
+                train_X, train_y = adasyn.fit_resample(train_X, train_y)
+            except RuntimeError:
+                pass
+        elif self.oversampler == "SLS" and k_neighbors>0:
+            sls = Safe_Level_SMOTE(n_neighbors=k_neighbors)
+            train_X, train_y = sls.sample(train_X, train_y)
 
         # Testing all models
-        scores = np.array([measure(y, clf.predict(X)) for clf in self.ensemble_])
+        scores = np.array([ba(y, clf.predict(X)) for clf in self.ensemble_])
 
         # Pruning
         if len(self.ensemble_) > 1:
@@ -131,9 +165,36 @@ class DESlibStream(BaseEstimator, ClassifierMixin):
         X_dsel = self.previous_X
         y_dsel = self.previous_y
 
-        if self.oversampled:
-            ros = SMOTE(random_state=42)
-            X_dsel, y_dsel = ros.fit_resample(X_dsel, y_dsel)
+        unique, counts = np.unique(y_dsel, return_counts=True)
+
+        k_neighbors = 5
+        if counts[0]-1 < 5:
+            k_neighbors = counts[0] - 1
+
+        if self.oversampler == "SMOTE" and k_neighbors>0:
+            smote = SMOTE(random_state=42, k_neighbors=k_neighbors)
+            X_dsel, y_dsel = smote.fit_resample(X_dsel, y_dsel)
+        elif self.oversampler == "svmSMOTE" and k_neighbors>0:
+            try:
+                svmSmote = SVMSMOTE(random_state=42, k_neighbors=k_neighbors)
+                X_dsel, y_dsel = svmSmote.fit_resample(X_dsel, y_dsel)
+            except ValueError:
+                pass
+        elif self.oversampler == "borderline1" and k_neighbors>0:
+            borderlineSmote1 = BorderlineSMOTE(random_state=42, k_neighbors=k_neighbors, kind='borderline-1')
+            X_dsel, y_dsel = borderlineSmote1.fit_resample(X_dsel, y_dsel)
+        elif self.oversampler == "borderline2" and k_neighbors>0:
+            borderlineSmote2 = BorderlineSMOTE(random_state=42, k_neighbors=k_neighbors, kind='borderline-2')
+            X_dsel, y_dsel = borderlineSmote2.fit_resample(X_dsel, y_dsel)
+        elif self.oversampler == "ADASYN" and k_neighbors>0:
+            try:
+                adasyn = ADASYN(random_state=42, n_neighbors=k_neighbors)
+                X_dsel, y_dsel = adasyn.fit_resample(X_dsel, y_dsel)
+            except RuntimeError:
+                pass
+        elif self.oversampler == "SLS" and k_neighbors>0:
+            sls = Safe_Level_SMOTE(n_neighbors=k_neighbors)
+            X_dsel, y_dsel = sls.sample(X_dsel, y_dsel)
 
         if self.desMethod == "KNORAE":
             des = KNORAE(self.ensemble_, random_state=42)
@@ -156,7 +217,7 @@ class DESlibStream(BaseEstimator, ClassifierMixin):
         return prediction
 
     def score(self, X, y):
-        return measure(y, self.predict(X))
+        return ba(y, self.predict(X))
 
     def manhattan_distance(self, X1, X2):
         """Manhattan distance from each new instance in X1 to the X2 instances"""

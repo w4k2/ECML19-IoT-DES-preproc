@@ -1,10 +1,9 @@
 import helper as h
 import numpy as np
 import multiprocessing
-from sklearn.model_selection import RepeatedStratifiedKFold, train_test_split
-
-from sklearn.ensemble import BaggingClassifier
-from sklearn import neighbors
+from sklearn.model_selection import RepeatedStratifiedKFold
+import logging
+logging.getLogger("smote_variants").setLevel(logging.CRITICAL)
 
 # prepare data
 keel_names = open("KEEL_names.txt", "r").read().split("\n")[:-1]

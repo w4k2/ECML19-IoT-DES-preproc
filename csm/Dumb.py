@@ -8,10 +8,16 @@ from sklearn.utils.multiclass import _check_partial_fit_first_call
 from sklearn import base
 from sklearn import neighbors
 from sklearn.metrics import f1_score, balanced_accuracy_score
+from imblearn.metrics import  geometric_mean_score
 import numpy as np
 import matplotlib.pyplot as plt
+from imblearn.over_sampling import SMOTE, SVMSMOTE, BorderlineSMOTE, ADASYN
+from smote_variants import Safe_Level_SMOTE
+from sklearn.tree import DecisionTreeClassifier
 
-measure = balanced_accuracy_score
+ba = balanced_accuracy_score
+f1 = f1_score
+gmean = geometric_mean_score
 
 
 class Dumb(BaseEstimator, ClassifierMixin):
@@ -27,12 +33,13 @@ class Dumb(BaseEstimator, ClassifierMixin):
 
     """
 
-    def __init__(self, ensemble_size=5, alpha=0.05):
+    def __init__(self, ensemble_size=10, alpha=0.05, oversampler = "None"):
         """Initialization."""
         self.ensemble_size = ensemble_size
         self.alpha = alpha
+        self.oversampler = oversampler
 
-    def set_base_clf(self, base_clf=neighbors.KNeighborsClassifier()):
+    def set_base_clf(self, base_clf=DecisionTreeClassifier()):
         """Establish base classifier."""
         self._base_clf = base_clf
 
@@ -86,9 +93,41 @@ class Dumb(BaseEstimator, ClassifierMixin):
         self.X_, self.y_ = X, y
 
         train_X, train_y = self.remove_outliers(X, y)
+        # train_X, train_y = X, y
+
+        unique, counts = np.unique(train_y, return_counts=True)
+
+        k_neighbors = 5
+        if counts[0] - 1 < 5:
+            k_neighbors = counts[0] - 1
+
+        if self.oversampler == "SMOTE" and k_neighbors > 0:
+            smote = SMOTE(random_state=42, k_neighbors=k_neighbors)
+            train_X, train_y = smote.fit_resample(train_X, train_y)
+        elif self.oversampler == "svmSMOTE" and k_neighbors > 0:
+            try:
+                svmSmote = SVMSMOTE(random_state=42, k_neighbors=k_neighbors)
+                train_X, train_y = svmSmote.fit_resample(train_X, train_y)
+            except ValueError:
+                pass
+        elif self.oversampler == "borderline1" and k_neighbors > 0:
+            borderlineSmote1 = BorderlineSMOTE(random_state=42, k_neighbors=k_neighbors, kind='borderline-1')
+            train_X, train_y = borderlineSmote1.fit_resample(train_X, train_y)
+        elif self.oversampler == "borderline2" and k_neighbors > 0:
+            borderlineSmote2 = BorderlineSMOTE(random_state=42, k_neighbors=k_neighbors, kind='borderline-2')
+            train_X, train_y = borderlineSmote2.fit_resample(train_X, train_y)
+        elif self.oversampler == "ADASYN" and k_neighbors > 0:
+            try:
+                adasyn = ADASYN(random_state=42, n_neighbors=k_neighbors)
+                train_X, train_y = adasyn.fit_resample(train_X, train_y)
+            except RuntimeError:
+                pass
+        elif self.oversampler == "SLS" and k_neighbors > 0:
+            sls = Safe_Level_SMOTE(n_neighbors=k_neighbors)
+            train_X, train_y = sls.sample(train_X, train_y)
 
         # Testing all models
-        scores = np.array([measure(y, clf.predict(X)) for clf in self.ensemble_])
+        scores = np.array([ba(y, clf.predict(X)) for clf in self.ensemble_])
 
         # Pruning
         if len(self.ensemble_) > 1:
@@ -129,4 +168,4 @@ class Dumb(BaseEstimator, ClassifierMixin):
         return prediction
 
     def score(self, X, y):
-        return measure(y, self.predict(X))
+        return ba(y, self.predict(X))

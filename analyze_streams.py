@@ -23,11 +23,14 @@ clfs = h.clfs()
 #
 # ldistributions = [[0.1, 0.9], [0.2, 0.8]]
 
+ldistributions = [[0.1, 0.1]]
 distributions = [[0.1, 0.9]]
-ldistributions = [[0.1, 0.9]]
+# label_noises = [0.0, 0.1, 0.2, 0.3]
 label_noises = [0.0]
-drift_types = ["sudden"]
-random_states = [1337]
+# drift_types = ["incremental", "sudden"]
+drift_types = ["sudden", "incremental"]
+# random_states = [1337, 666, 42]
+random_states = [1337, 666]
 
 # Prepare storage for results
 chunk_size = next(iter(streams.values())).chunk_size
@@ -38,7 +41,7 @@ score_points = list(range(chunk_size, chunk_size * n_chunks, chunk_size))
 def gather_and_present(title, filename, streams, what):
     results_hypercube = np.zeros((len(streams), len(clfs), n_chunks - 1))
     for i, stream_n in enumerate(streams):
-        results = np.load("results/experiment_streams/%s.npy" % stream_n)
+        results = np.load("results/experiment_streams/%s_ba.npy" % stream_n)
         results_hypercube[i] = results
 
     overall = np.mean(results_hypercube, axis=0)
@@ -120,7 +123,7 @@ for drift_type in drift_types:
                     distribution=distribution,
                     random_state=random_state,
                     flip_y=flip_y,
-                    n_drifts=1,
+                    n_drifts=5,
                 )
                 streams.update({str(stream): stream})
 
@@ -146,7 +149,7 @@ for distribution in distributions:
                     distribution=distribution,
                     random_state=random_state,
                     flip_y=flip_y,
-                    n_drifts=1,
+                    n_drifts=5,
                 )
                 streams.update({str(stream): stream})
 

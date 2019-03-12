@@ -11,6 +11,7 @@ from deslib.des import KNORAE, KNORAU, DESKNN, DESClustering
 from imblearn.over_sampling import RandomOverSampler, SMOTE, SVMSMOTE, BorderlineSMOTE, ADASYN
 from imblearn.metrics  import geometric_mean_score
 from smote_variants import Safe_Level_SMOTE
+import smote_variants as sv
 
 ba = balanced_accuracy_score
 f1 = f1_score
@@ -55,8 +56,10 @@ class DESlibKEEL(BaseEstimator, ClassifierMixin):
         if self.oversampled:
             smote = SMOTE(random_state=42)
             rand = RandomOverSampler(random_state=42)
+            # sls = sv.SMOTE()
             try:
                 X, y = smote.fit_resample(X, y)
+                # X, y = sls.sample(X, y)
             except ValueError:
                 print("Leci random")
                 X, y = rand.fit_resample(X, y)
@@ -79,8 +82,10 @@ class DESlibKEEL(BaseEstimator, ClassifierMixin):
         if self.oversampled:
             smote = SMOTE(random_state=42)
             rand = RandomOverSampler(random_state=42)
+            sls = sv.SMOTE()
             try:
                 self.X_dsel, self.y_dsel = smote.fit_resample(self.X_dsel, self.y_dsel)
+                # self.X_dsel, self.y_dsel = sls.sample(self.X_dsel, self.y_dsel)
             except ValueError:
                 self.X_dsel, self.y_dsel = rand.fit_resample(self.X_dsel, self.y_dsel)
 

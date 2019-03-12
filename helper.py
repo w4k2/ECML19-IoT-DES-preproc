@@ -27,30 +27,80 @@ p = 0.05
 
 def clfs():
     return {
-        # "Basic": csm.Dumb(ensemble_size=2),
-        "KNNov": csm.DESlibStream(desMethod="KNN", oversampled=True, ensemble_size=3),
-        # "KNN": csm.DESlibStream(desMethod="KNN", oversampled=False, ensemble_size=3),
-        # "Clustering": csm.DESlibStream(desMethod="Clustering", oversampled=False, ensemble_size=20),
-        # "KNORAE": csm.DESlibStream(desMethod="KNORAE", oversampled=False, ensemble_size=20),
-        # "KNORAU": csm.DESlibStream(desMethod="KNORAU", oversampled=False, ensemble_size=20),
-        # "KNNov": csm.DESlibStream(desMethod="KNN", oversampled=True, ensemble_size=20),
-        # "Clusteringov": csm.DESlibStream(desMethod="Clustering", oversampled=True, ensemble_size=20),
-        # "KNORAEov": csm.DESlibStream(desMethod="KNORAE", oversampled=True, ensemble_size=20),
-        # "KNORAUov": csm.DESlibStream(desMethod="KNORAU", oversampled=True, ensemble_size=20),
+        "Basic": csm.Dumb(oversampler="None"),
+        "KNORAEn": csm.DESlibStream(oversampler="None", desMethod="KNORAE"),
+        # "KNORAUn": csm.DESlibStream(oversampler="None", desMethod="KNORAU"),
+        # "KNNn": csm.DESlibStream(oversampler="None", desMethod="KNN"),
+        # "Clusteringn": csm.DESlibStream(oversampler="None", desMethod="Clustering"),
+        "BasicSmote": csm.Dumb(oversampler="SMOTE"),
+        "KNORAESmote": csm.DESlibStream(oversampler="SMOTE", desMethod="KNORAE"),
+        # "KNORAUSmote": csm.DESlibStream(oversampler="SMOTE", desMethod="KNORAU"),
+        # "KNNSmote": csm.DESlibStream(oversampler="SMOTE", desMethod="KNN"),
+        # "ClusteringSmote": csm.DESlibStream(oversampler="SMOTE", desMethod="Clustering"),
+        # "Basicsvm": csm.Dumb(oversampler="svmSMOTE"),
+        # "KNORAEsvm": csm.DESlibStream(oversampler="svmSMOTE", desMethod="KNORAE"),
+        # "KNORAUsvm": csm.DESlibStream(oversampler="svmSMOTE", desMethod="KNORAU"),
+        # "KNNsvm": csm.DESlibStream(oversampler="svmSMOTE", desMethod="KNN"),
+        # "Clusteringsvm": csm.DESlibStream(oversampler="svmSMOTE", desMethod="Clustering"),
+        # "Basicb1": csm.Dumb(oversampler="borderline1"),
+        # "KNORAEb1": csm.DESlibStream(oversampler="borderline1", desMethod="KNORAE"),
+        # "KNORAUb1": csm.DESlibStream(oversampler="borderline1", desMethod="KNORAU"),
+        # "KNNb1": csm.DESlibStream(oversampler="borderline1", desMethod="KNN"),
+        # "Clusteringb1": csm.DESlibStream(oversampler="borderline1", desMethod="Clustering"),
+        # "Basicb2": csm.Dumb(oversampler="borderline2"),
+        # "KNORAEb2": csm.DESlibStream(oversampler="borderline2", desMethod="KNORAE"),
+        # "KNORAUb2": csm.DESlibStream(oversampler="borderline2", desMethod="KNORAU"),
+        # "KNNb2": csm.DESlibStream(oversampler="borderline2", desMethod="KNN"),
+        # "Clusteringb2": csm.DESlibStream(oversampler="borderline2", desMethod="Clustering"),
+        # "Basicada": csm.Dumb(oversampler="Adasyn"),
+        # "KNORAEada": csm.DESlibStream(oversampler="ADASYN", desMethod="KNORAE"),
+        # "KNORAUada": csm.DESlibStream(oversampler="ADASYN", desMethod="KNORAU"),
+        # "KNNada": csm.DESlibStream(oversampler="ADASYN", desMethod="KNN"),
+        # "Clusteringada": csm.DESlibStream(oversampler="ADASYN", desMethod="Clustering"),
+        # "Basicsls": csm.Dumb(oversampler="SLS"),
+        # "KNORAEsls": csm.DESlibStream(oversampler="SLS", desMethod="KNORAE"),
+        # "KNORAUsls": csm.DESlibStream(oversampler="SLS", desMethod="KNORAU"),
+        # "KNNsls": csm.DESlibStream(oversampler="SLS", desMethod="KNN"),
+        # "Clusteringsls": csm.DESlibStream(oversampler="SLS", desMethod="Clustering"),
     }
 
 def keel_clfs():
     return {
-        "Basic": csm.DESlibKEEL(oversampled=False, desMethod="None"),
-        "KNORAE": csm.DESlibKEEL(oversampled=False, desMethod="KNORAE"),
-        # "KNORAU": csm.DESlibKEEL(oversampled=False, desMethod="KNORAU"),
-        # "KNN": csm.DESlibKEEL(oversampled=False, desMethod="KNN"),
-        # "Clustering": csm.DESlibKEEL(oversampled=False, desMethod="Clustering"),
-        # "Basicov": csm.DESlibKEEL(oversampled=True, desMethod="None"),
-        "KNORAEov": csm.DESlibKEEL(oversampled=True, desMethod="KNORAE"),
-        # "KNORAUov": csm.DESlibKEEL(oversampled=True, desMethod="KNORAU"),
-        # "KNNov": csm.DESlibKEEL(oversampled=True, desMethod="KNN"),
-        # "Clusteringov": csm.DESlibKEEL(oversampled=True, desMethod="Clustering"),
+        "Basicn": csm.DESlibKEEL2(oversampler="None", desMethod="None"),
+        "KNORAEn": csm.DESlibKEEL2(oversampler="None", desMethod="KNORAE"),
+        "KNORAUn": csm.DESlibKEEL2(oversampler="None", desMethod="KNORAU"),
+        "KNNn": csm.DESlibKEEL2(oversampler="None", desMethod="KNN"),
+        "Clusteringn": csm.DESlibKEEL2(oversampler="None", desMethod="Clustering"),
+        "BasicSmote": csm.DESlibKEEL2(oversampler="SMOTE", desMethod="None"),
+        "KNORAESmote": csm.DESlibKEEL2(oversampler="SMOTE", desMethod="KNORAE"),
+        "KNORAUSmote": csm.DESlibKEEL2(oversampler="SMOTE", desMethod="KNORAU"),
+        "KNNSmote": csm.DESlibKEEL2(oversampler="SMOTE", desMethod="KNN"),
+        "ClusteringSmote": csm.DESlibKEEL2(oversampler="SMOTE", desMethod="Clustering"),
+        "Basicsvm": csm.DESlibKEEL2(oversampler="svmSMOTE", desMethod="None"),
+        "KNORAEsvm": csm.DESlibKEEL2(oversampler="svmSMOTE", desMethod="KNORAE"),
+        "KNORAUsvm": csm.DESlibKEEL2(oversampler="svmSMOTE", desMethod="KNORAU"),
+        "KNNsvm": csm.DESlibKEEL2(oversampler="svmSMOTE", desMethod="KNN"),
+        "Clusteringsvm": csm.DESlibKEEL2(oversampler="svmSMOTE", desMethod="Clustering"),
+        "Basicb1": csm.DESlibKEEL2(oversampler="borderline1", desMethod="None"),
+        "KNORAEb1": csm.DESlibKEEL2(oversampler="borderline1", desMethod="KNORAE"),
+        "KNORAUb1": csm.DESlibKEEL2(oversampler="borderline1", desMethod="KNORAU"),
+        "KNNb1": csm.DESlibKEEL2(oversampler="borderline1", desMethod="KNN"),
+        "Clusteringb1": csm.DESlibKEEL2(oversampler="borderline1", desMethod="Clustering"),
+        "Basicb2": csm.DESlibKEEL2(oversampler="borderline2", desMethod="None"),
+        "KNORAEb2": csm.DESlibKEEL2(oversampler="borderline2", desMethod="KNORAE"),
+        "KNORAUb2": csm.DESlibKEEL2(oversampler="borderline2", desMethod="KNORAU"),
+        "KNNb2": csm.DESlibKEEL2(oversampler="borderline2", desMethod="KNN"),
+        "Clusteringb2": csm.DESlibKEEL2(oversampler="borderline2", desMethod="Clustering"),
+        "Basicada": csm.DESlibKEEL2(oversampler="ADASYN", desMethod="None"),
+        "KNORAEada": csm.DESlibKEEL2(oversampler="ADASYN", desMethod="KNORAE"),
+        "KNORAUada": csm.DESlibKEEL2(oversampler="ADASYN", desMethod="KNORAU"),
+        "KNNada": csm.DESlibKEEL2(oversampler="ADASYN", desMethod="KNN"),
+        "Clusteringada": csm.DESlibKEEL2(oversampler="ADASYN", desMethod="Clustering"),
+        "Basicsls": csm.DESlibKEEL2(oversampler="SLS", desMethod="None"),
+        "KNORAEsls": csm.DESlibKEEL2(oversampler="SLS", desMethod="KNORAE"),
+        "KNORAUsls": csm.DESlibKEEL2(oversampler="SLS", desMethod="KNORAU"),
+        "KNNsls": csm.DESlibKEEL2(oversampler="SLS", desMethod="KNN"),
+        "Clusteringsls": csm.DESlibKEEL2(oversampler="SLS", desMethod="Clustering"),
     }
 
 
@@ -66,9 +116,9 @@ def streams():
     # label_noises = [0.0, 0.1, 0.2, 0.3]
     label_noises = [0.0]
     # drift_types = ["incremental", "sudden"]
-    drift_types = ["sudden"]
+    drift_types = ["sudden", "incremental"]
     # random_states = [1337, 666, 42]
-    random_states = [1337]
+    random_states = [1337, 666]
 
     # Prepare streams
     streams = {}
@@ -81,7 +131,7 @@ def streams():
                         distribution=distribution,
                         random_state=random_state,
                         flip_y=flip_y,
-                        n_drifts=1,
+                        n_drifts=5,
                     )
                     streams.update({str(stream): stream})
 

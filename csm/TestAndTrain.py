@@ -50,7 +50,9 @@ class TestAndTrain(object):
         self.evaluations = 0
         self.processed_chunks = 0
 
-        self.scores = []
+        self.scores_ba = []
+        self.scores_f1 = []
+        self.scores_gmean = []
         self.score_points = []
         self.training_times = []
         self.evaluation_times = []
@@ -93,12 +95,14 @@ class TestAndTrain(object):
         evaluation_time = time.time()
 
         # Prepare evaluation chunk
-        score = self.clf.score(X, y)
+        score_ba, score_f1, score_gmean = self.clf.score(X, y)
         evaluation_time = time.time() - evaluation_time
 
         # Collecting results
         self.score_points.append(self.processed_chunks * self.chunk_size)
-        self.scores.append(score)
+        self.scores_ba.append(score_ba)
+        self.scores_f1.append(score_f1)
+        self.scores_gmean.append(score_gmean)
         self.evaluation_times.append(evaluation_time)
         self.training_times.append(self.training_time)
 
@@ -106,4 +110,4 @@ class TestAndTrain(object):
 
         self.training_time = time.time()
 
-        return score
+        return score_ba, score_f1, score_gmean

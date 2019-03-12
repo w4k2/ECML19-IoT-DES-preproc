@@ -27,7 +27,7 @@ p = 0.05
 
 def clfs():
     return {
-        "Basic": csm.Dumb(oversampler="None"),
+        "Basicn": csm.Dumb(oversampler="None"),
         "KNORAEn": csm.DESlibStream(oversampler="None", desMethod="KNORAE"),
         # "KNORAUn": csm.DESlibStream(oversampler="None", desMethod="KNORAU"),
         # "KNNn": csm.DESlibStream(oversampler="None", desMethod="KNN"),

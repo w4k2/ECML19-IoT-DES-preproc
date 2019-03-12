@@ -35,11 +35,15 @@ def worker(i, stream_n):
             "Done clf %i/%i of stream %i/%i" % (j + 1, len(clfs), i + 1, len(streams))
         )
 
-        results_ba[j, :] = learner.scores
+        results_ba[j, :] = learner.scores_ba
+        results_f1[j, :] = learner.scores_f1
+        results_gmean[j, :] = learner.scores_gmean
 
         stream.reset()
 
     np.save("results/experiment_streams/%s_ba" % stream, results_ba)
+    np.save("results/experiment_streams/%s_f1" % stream, results_f1)
+    np.save("results/experiment_streams/%s_gmean" % stream, results_gmean)
 
 
 jobs = []

@@ -168,4 +168,4 @@ class Dumb(BaseEstimator, ClassifierMixin):
         return prediction
 
     def score(self, X, y):
-        return ba(y, self.predict(X))
+        return ba(y, self.predict(X)), f1(y, self.predict(X)), gmean(y, self.predict(X))

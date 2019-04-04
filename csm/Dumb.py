@@ -33,7 +33,7 @@ class Dumb(BaseEstimator, ClassifierMixin):
 
     """
 
-    def __init__(self, ensemble_size=10, alpha=0.05, oversampler = "None"):
+    def __init__(self, ensemble_size=20, alpha=0.05, oversampler = "None"):
         """Initialization."""
         self.ensemble_size = ensemble_size
         self.alpha = alpha

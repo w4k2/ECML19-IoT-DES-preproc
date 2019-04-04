@@ -59,6 +59,7 @@ def worker(i, data_n):
         results_f1[j, :] = scores_f1
         results_gmean[j, :] = scores_gmean
 
+
     np.save("results/experiment_keel/%s_ba" % name, results_ba)
     np.save("results/experiment_keel/%s_f1" % name, results_f1)
     np.save("results/experiment_keel/%s_gmean" % name, results_gmean)

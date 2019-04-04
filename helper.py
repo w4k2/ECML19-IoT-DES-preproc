@@ -1,7 +1,8 @@
 import csm
 import numpy as np
 import pandas as pd
-from scipy.stats import ranksums
+from scipy.stats import ranksums, wilcoxon, rankdata
+import string
 
 p = 0.05
 
@@ -27,35 +28,35 @@ p = 0.05
 
 def clfs():
     return {
-        "Basicn": csm.Dumb(oversampler="None"),
-        "KNORAEn": csm.DESlibStream(oversampler="None", desMethod="KNORAE"),
-        # "KNORAUn": csm.DESlibStream(oversampler="None", desMethod="KNORAU"),
-        # "KNNn": csm.DESlibStream(oversampler="None", desMethod="KNN"),
-        # "Clusteringn": csm.DESlibStream(oversampler="None", desMethod="Clustering"),
-        "BasicSmote": csm.Dumb(oversampler="SMOTE"),
-        "KNORAESmote": csm.DESlibStream(oversampler="SMOTE", desMethod="KNORAE"),
+        "Naive-None": csm.Dumb(oversampler="None"),
+        # "KNORAE-None": csm.DESlibStream(oversampler="None", desMethod="KNORAE"),
+        "KNORAU-None": csm.DESlibStream(oversampler="None", desMethod="KNORAU"),
+        "KNN-None": csm.DESlibStream(oversampler="None", desMethod="KNN"),
+        # "ClusteringNone": csm.DESlibStream(oversampler="None", desMethod="Clustering"),
+        # "Naive-Smote": csm.Dumb(oversampler="SMOTE"),
+        # "KNORAE-Smote": csm.DESlibStream(oversampler="SMOTE", desMethod="KNORAE"),
         # "KNORAUSmote": csm.DESlibStream(oversampler="SMOTE", desMethod="KNORAU"),
-        # "KNNSmote": csm.DESlibStream(oversampler="SMOTE", desMethod="KNN"),
+        # "KNN-Smote": csm.DESlibStream(oversampler="SMOTE", desMethod="KNN"),
         # "ClusteringSmote": csm.DESlibStream(oversampler="SMOTE", desMethod="Clustering"),
-        # "Basicsvm": csm.Dumb(oversampler="svmSMOTE"),
-        # "KNORAEsvm": csm.DESlibStream(oversampler="svmSMOTE", desMethod="KNORAE"),
-        # "KNORAUsvm": csm.DESlibStream(oversampler="svmSMOTE", desMethod="KNORAU"),
-        # "KNNsvm": csm.DESlibStream(oversampler="svmSMOTE", desMethod="KNN"),
+        "Naive-SVM": csm.Dumb(oversampler="svmSMOTE"),
+        # "KNORAE-SVM": csm.DESlibStream(oversampler="svmSMOTE", desMethod="KNORAE"),
+        "KNORAU-SVM": csm.DESlibStream(oversampler="svmSMOTE", desMethod="KNORAU"),
+        "KNN-SVM": csm.DESlibStream(oversampler="svmSMOTE", desMethod="KNN"),
         # "Clusteringsvm": csm.DESlibStream(oversampler="svmSMOTE", desMethod="Clustering"),
-        # "Basicb1": csm.Dumb(oversampler="borderline1"),
+        # "Naive-B1": csm.Dumb(oversampler="borderline1"),
         # "KNORAEb1": csm.DESlibStream(oversampler="borderline1", desMethod="KNORAE"),
         # "KNORAUb1": csm.DESlibStream(oversampler="borderline1", desMethod="KNORAU"),
-        # "KNNb1": csm.DESlibStream(oversampler="borderline1", desMethod="KNN"),
+        # "KNN-B1": csm.DESlibStream(oversampler="borderline1", desMethod="KNN"),
         # "Clusteringb1": csm.DESlibStream(oversampler="borderline1", desMethod="Clustering"),
-        # "Basicb2": csm.Dumb(oversampler="borderline2"),
-        # "KNORAEb2": csm.DESlibStream(oversampler="borderline2", desMethod="KNORAE"),
-        # "KNORAUb2": csm.DESlibStream(oversampler="borderline2", desMethod="KNORAU"),
-        # "KNNb2": csm.DESlibStream(oversampler="borderline2", desMethod="KNN"),
-        # "Clusteringb2": csm.DESlibStream(oversampler="borderline2", desMethod="Clustering"),
-        # "Basicada": csm.Dumb(oversampler="Adasyn"),
+        "Naive-B2": csm.Dumb(oversampler="borderline2"),
+        # "KNORAE-B2": csm.DESlibStream(oversampler="borderline2", desMethod="KNORAE"),
+        "KNORAU-B2": csm.DESlibStream(oversampler="borderline2", desMethod="KNORAU"),
+        "KNN-B2": csm.DESlibStream(oversampler="borderline2", desMethod="KNN"),
+        # "ClusteringB2": csm.DESlibStream(oversampler="borderline2", desMethod="Clustering"),
+        # "Naive-ADASYN": csm.Dumb(oversampler="Adasyn"),
         # "KNORAEada": csm.DESlibStream(oversampler="ADASYN", desMethod="KNORAE"),
         # "KNORAUada": csm.DESlibStream(oversampler="ADASYN", desMethod="KNORAU"),
-        # "KNNada": csm.DESlibStream(oversampler="ADASYN", desMethod="KNN"),
+        # "KNN-ADASYN": csm.DESlibStream(oversampler="ADASYN", desMethod="KNN"),
         # "Clusteringada": csm.DESlibStream(oversampler="ADASYN", desMethod="Clustering"),
         # "Basicsls": csm.Dumb(oversampler="SLS"),
         # "KNORAEsls": csm.DESlibStream(oversampler="SLS", desMethod="KNORAE"),
@@ -71,54 +72,50 @@ def keel_clfs():
         "KNORAUn": csm.DESlibKEEL2(oversampler="None", desMethod="KNORAU"),
         "KNNn": csm.DESlibKEEL2(oversampler="None", desMethod="KNN"),
         "Clusteringn": csm.DESlibKEEL2(oversampler="None", desMethod="Clustering"),
-        "BasicSmote": csm.DESlibKEEL2(oversampler="SMOTE", desMethod="None"),
-        "KNORAESmote": csm.DESlibKEEL2(oversampler="SMOTE", desMethod="KNORAE"),
-        "KNORAUSmote": csm.DESlibKEEL2(oversampler="SMOTE", desMethod="KNORAU"),
-        "KNNSmote": csm.DESlibKEEL2(oversampler="SMOTE", desMethod="KNN"),
-        "ClusteringSmote": csm.DESlibKEEL2(oversampler="SMOTE", desMethod="Clustering"),
-        "Basicsvm": csm.DESlibKEEL2(oversampler="svmSMOTE", desMethod="None"),
-        "KNORAEsvm": csm.DESlibKEEL2(oversampler="svmSMOTE", desMethod="KNORAE"),
-        "KNORAUsvm": csm.DESlibKEEL2(oversampler="svmSMOTE", desMethod="KNORAU"),
-        "KNNsvm": csm.DESlibKEEL2(oversampler="svmSMOTE", desMethod="KNN"),
-        "Clusteringsvm": csm.DESlibKEEL2(oversampler="svmSMOTE", desMethod="Clustering"),
-        "Basicb1": csm.DESlibKEEL2(oversampler="borderline1", desMethod="None"),
-        "KNORAEb1": csm.DESlibKEEL2(oversampler="borderline1", desMethod="KNORAE"),
-        "KNORAUb1": csm.DESlibKEEL2(oversampler="borderline1", desMethod="KNORAU"),
-        "KNNb1": csm.DESlibKEEL2(oversampler="borderline1", desMethod="KNN"),
-        "Clusteringb1": csm.DESlibKEEL2(oversampler="borderline1", desMethod="Clustering"),
-        "Basicb2": csm.DESlibKEEL2(oversampler="borderline2", desMethod="None"),
-        "KNORAEb2": csm.DESlibKEEL2(oversampler="borderline2", desMethod="KNORAE"),
-        "KNORAUb2": csm.DESlibKEEL2(oversampler="borderline2", desMethod="KNORAU"),
-        "KNNb2": csm.DESlibKEEL2(oversampler="borderline2", desMethod="KNN"),
-        "Clusteringb2": csm.DESlibKEEL2(oversampler="borderline2", desMethod="Clustering"),
-        "Basicada": csm.DESlibKEEL2(oversampler="ADASYN", desMethod="None"),
-        "KNORAEada": csm.DESlibKEEL2(oversampler="ADASYN", desMethod="KNORAE"),
-        "KNORAUada": csm.DESlibKEEL2(oversampler="ADASYN", desMethod="KNORAU"),
-        "KNNada": csm.DESlibKEEL2(oversampler="ADASYN", desMethod="KNN"),
-        "Clusteringada": csm.DESlibKEEL2(oversampler="ADASYN", desMethod="Clustering"),
-        "Basicsls": csm.DESlibKEEL2(oversampler="SLS", desMethod="None"),
-        "KNORAEsls": csm.DESlibKEEL2(oversampler="SLS", desMethod="KNORAE"),
-        "KNORAUsls": csm.DESlibKEEL2(oversampler="SLS", desMethod="KNORAU"),
-        "KNNsls": csm.DESlibKEEL2(oversampler="SLS", desMethod="KNN"),
-        "Clusteringsls": csm.DESlibKEEL2(oversampler="SLS", desMethod="Clustering"),
+        # "BasicSmote": csm.DESlibKEEL2(oversampler="SMOTE", desMethod="None"),
+        # "KNORAESmote": csm.DESlibKEEL2(oversampler="SMOTE", desMethod="KNORAE"),
+        # "KNORAUSmote": csm.DESlibKEEL2(oversampler="SMOTE", desMethod="KNORAU"),
+        # "KNNSmote": csm.DESlibKEEL2(oversampler="SMOTE", desMethod="KNN"),
+        # "ClusteringSmote": csm.DESlibKEEL2(oversampler="SMOTE", desMethod="Clustering"),
+        # "Basicsvm": csm.DESlibKEEL2(oversampler="svmSMOTE", desMethod="None"),
+        # "KNORAEsvm": csm.DESlibKEEL2(oversampler="svmSMOTE", desMethod="KNORAE"),
+        # "KNORAUsvm": csm.DESlibKEEL2(oversampler="svmSMOTE", desMethod="KNORAU"),
+        # "KNNsvm": csm.DESlibKEEL2(oversampler="svmSMOTE", desMethod="KNN"),
+        # "Clusteringsvm": csm.DESlibKEEL2(oversampler="svmSMOTE", desMethod="Clustering"),
+        # "Basicb1": csm.DESlibKEEL2(oversampler="borderline1", desMethod="None"),
+        # "KNORAEb1": csm.DESlibKEEL2(oversampler="borderline1", desMethod="KNORAE"),
+        # "KNORAUb1": csm.DESlibKEEL2(oversampler="borderline1", desMethod="KNORAU"),
+        # "KNNb1": csm.DESlibKEEL2(oversampler="borderline1", desMethod="KNN"),
+        # "Clusteringb1": csm.DESlibKEEL2(oversampler="borderline1", desMethod="Clustering"),
+        # "Basicb2": csm.DESlibKEEL2(oversampler="borderline2", desMethod="None"),
+        # "KNORAEb2": csm.DESlibKEEL2(oversampler="borderline2", desMethod="KNORAE"),
+        # "KNORAUb2": csm.DESlibKEEL2(oversampler="borderline2", desMethod="KNORAU"),
+        # "KNNb2": csm.DESlibKEEL2(oversampler="borderline2", desMethod="KNN"),
+        # "Clusteringb2": csm.DESlibKEEL2(oversampler="borderline2", desMethod="Clustering"),
+        # "Basicada": csm.DESlibKEEL2(oversampler="ADASYN", desMethod="None"),
+        # "KNORAEada": csm.DESlibKEEL2(oversampler="ADASYN", desMethod="KNORAE"),
+        # "KNORAUada": csm.DESlibKEEL2(oversampler="ADASYN", desMethod="KNORAU"),
+        # "KNNada": csm.DESlibKEEL2(oversampler="ADASYN", desMethod="KNN"),
+        # "Clusteringada": csm.DESlibKEEL2(oversampler="ADASYN", desMethod="Clustering"),
+        # "Basicsls": csm.DESlibKEEL2(oversampler="SLS", desMethod="None"),
+        # "KNORAEsls": csm.DESlibKEEL2(oversampler="SLS", desMethod="KNORAE"),
+        # "KNORAUsls": csm.DESlibKEEL2(oversampler="SLS", desMethod="KNORAU"),
+        # "KNNsls": csm.DESlibKEEL2(oversampler="SLS", desMethod="KNN"),
+        # "Clusteringsls": csm.DESlibKEEL2(oversampler="SLS", desMethod="Clustering"),
     }
-
-
-def real_streams():
-    streams = ["elecNormNew"]
-    return streams
 
 
 def streams():
     # Variables
-    # distributions = [[0.1, 0.9], [0.2, 0.8], [0.3, 0.7], [0.4, 0.6]]
-    distributions = [[0.1, 0.9]]
-    # label_noises = [0.0, 0.1, 0.2, 0.3]
-    label_noises = [0.0]
-    # drift_types = ["incremental", "sudden"]
+    distributions = [[0.1, 0.9], [0.2, 0.8], [0.3, 0.7], [0.4, 0.6]]
+    label_noises = [0.0, 0.1, 0.2]
     drift_types = ["sudden", "incremental"]
-    # random_states = [1337, 666, 42]
-    random_states = [1337, 666]
+    random_states = [522, 825, 37]
+
+    # distributions = [[0.1, 0.9]]
+    # label_noises = [0.0, 0.1]
+    # drift_types = ["incremental"]
+    # random_states = [522]
 
     # Prepare streams
     streams = {}
@@ -146,7 +143,9 @@ def tabrow(what, res):
 
     leader = np.argmax(mean)
 
-    pvalues = np.array([ranksums(res[leader], res[i]).pvalue for i in range(width)])
+    pvalues = np.array([wilcoxon(res[leader], res[i], zero_method="zsplit").pvalue for i in range(width)])
+    # pvalues = np.array([ranksums(res[leader], res[i]).pvalue for i in range(width)])
+
     dependences = pvalues > p
 
     return (
@@ -156,6 +155,68 @@ def tabrow(what, res):
             " & ".join(
                 [
                     "%s %.3f" % ("\\bfseries" if dependences[i] else "", mean[i])
+                    for i in range(width)
+                ]
+            )
+            + " \\\\"
+        )
+    )
+
+def tabrow_indices(what, res):
+
+    mean = np.mean(res, axis=1)
+
+    width = len(mean)
+    leader = np.argmax(mean)
+
+    # ranks = np.zeros(shape=(3582, 7))
+    # for i in range(3582):
+    #     ranks[i, :] = rankdata(res[:, i])
+    # meanrnks = np.mean(ranks, axis=0)
+    # print(meanrnks)
+
+    pvaluesm = np.array([wilcoxon(res[leader], res[i], zero_method="zsplit").pvalue for i in range(width)])
+    # pvaluesm = np.array([ranksums(res[leader], res[i]).pvalue for i in range(width)])
+    dependencesm = pvaluesm > p
+
+    pvalues = np.zeros(shape=(width, width))
+
+    for i in range(width):
+        for j in range(width):
+            pvalues[i][j] = wilcoxon(res[i], res[j], zero_method="zsplit").pvalue
+            # pvalues[i][j] = ranksums(res[i], res[j]).pvalue
+    dependences = pvalues < p
+
+
+    for i in range(width):
+        for j in range(width):
+            if mean[i] > mean[j] and dependences[i][j]==True:
+                dependences[i][j] = True
+            else:
+                dependences[i][j] = False
+
+
+    for i in range(width):
+        if np.argwhere(dependences[i] == True).shape[0] == width-1:
+            print("$_{All}$", end=" & ")
+        elif np.argwhere(dependences[i]==True).shape[0]!=0:
+            # print((np.argwhere(dependences[i]==True).reshape(-1, np.argwhere(dependences[i]==True).shape[0]))+1, end=" & ")
+            array = (np.argwhere(dependences[i] == True).reshape(-1, np.argwhere(dependences[i] == True).shape[0])) + 1
+            if width == 7:
+                str_array = [[string.ascii_lowercase[element - 1] for element in row] for row in array]
+                array = str_array
+            for row in array:
+                print("$_{", ",".join(map(str, row)), "}$", end=" & ")
+        else:
+            print("--", end=" & ")
+
+    return (
+        ("\\emph{%s}" % what)
+        + " & "
+        + (
+            " & ".join(
+                [
+                    "%s %.3f" % ("\\bfseries" if dependencesm[i] else "", mean[i])
                     for i in range(width)
                 ]
             )

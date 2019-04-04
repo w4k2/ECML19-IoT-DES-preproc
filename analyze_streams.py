@@ -7,7 +7,7 @@ import helper as h
 import csm
 
 np.set_printoptions(precision=3)
-p = 0.05
+# p = 0.05
 
 
 # Select streams and methods
@@ -23,14 +23,17 @@ clfs = h.clfs()
 #
 # ldistributions = [[0.1, 0.9], [0.2, 0.8]]
 
-ldistributions = [[0.1, 0.1]]
-distributions = [[0.1, 0.9]]
-# label_noises = [0.0, 0.1, 0.2, 0.3]
-label_noises = [0.0]
-# drift_types = ["incremental", "sudden"]
+ldistributions = [[0.1, 0.9], [0.2, 0.8]]
+distributions = [[0.1, 0.9], [0.2, 0.8], [0.3, 0.7], [0.4, 0.6]]
+label_noises = [0.0, 0.1, 0.2]
 drift_types = ["sudden", "incremental"]
-# random_states = [1337, 666, 42]
-random_states = [1337, 666]
+random_states = [522, 825, 37]
+#
+# ldistributions = [[0.1, 0.9]]
+# distributions = [[0.1, 0.9]]
+# label_noises = [0.0, 0.1]
+# drift_types = ["incremental"]
+# random_states = [522]
 
 # Prepare storage for results
 chunk_size = next(iter(streams.values())).chunk_size
@@ -39,22 +42,55 @@ score_points = list(range(chunk_size, chunk_size * n_chunks, chunk_size))
 
 
 def gather_and_present(title, filename, streams, what):
-    results_hypercube = np.zeros((len(streams), len(clfs), n_chunks - 1))
+    n = 9
+    results_hypercube = np.zeros((len(streams), n, n_chunks - 1))
     for i, stream_n in enumerate(streams):
-        results = np.load("results/experiment_streams/%s_ba.npy" % stream_n)
-        results_hypercube[i] = results
+        results = np.load("results/experiment_streams/%s_gmean.npy" % stream_n)
+        # results_hypercube[i] = results
+        # results_hypercube[i] = results[0:5, :] # none
+        # results_hypercube[i] = results[5:10, :] # smote
+        # results_hypercube[i] = results[10:15, :] # svm
+        # results_hypercube[i] = results[15:20, :] # b1
+        # results_hypercube[i] = results[20:25, :] # b2
+        # results_hypercube[i] = results[30:35, :] # sls
+        # results_hypercube[i] = results[25:30, :] # adasyn
+        # results_hypercube[i] = results[[0, 5, 10, 15, 20, 30, 25], :] # basic
+        # results_hypercube[i] = results[[1, 6, 11, 16, 21, 31, 26], :]  # knorae
+        # results_hypercube[i] = results[[2, 7, 12, 17, 22, 32, 27], :]  # knorau
+        # results_hypercube[i] = results[[3, 8, 13, 18, 23, 33, 28], :]  # knn
+        # results_hypercube[i] = results[[4, 9, 14, 19, 24, 34, 29], :]  # clustering
 
+        colors = [u'#1f77b4', u'#ff7f0e', u'#2ca02c', u'#e377c2', u'#bcbd22', u'#d62728', "olive", u'#17becf',
+                  u'#9467bd', u'#17becf']
+        results_hypercube[i] = results[[0, 2, 3, 10, 12, 13, 20, 22, 23], :]  # all
+        # colors = [u'#1f77b4', u'#ff7f0e', u'#2ca02c', u'#d62728', u'#9467bd', u'#8c564b', u'#e377c2']
+        # results_hypercube[i] = results[[0, 2, 20, 22], :]  # d10 bac
+        # results_hypercube[i] = results[[0, 2, 3, 20, 22, 23], :]  # d10 gmean
+        # results_hypercube[i] = results[[0, 2, 10, 12], :]  # d20 bac
+        # results_hypercube[i] = results[[0, 2, 10, 12, 30, 32], :]  # d20 gmean
+        # results_hypercube[i] = results[[0, 2, 10, 12], :]  # sudden bac
+        # results_hypercube[i] = results[[0, 2, 20, 22], :]  # sudden gmean
+        # results_hypercube[i] = results[[0, 2, 10, 12], :]  # incremental bac
+        # results_hypercube[i] = results[[0, 2, 3, 10, 13, 20, 22], :]  # incremental gmean
+
+
+    # titleplus = " - BAC"
+    titleplus = " G-mean"
+    title = title + titleplus
     overall = np.mean(results_hypercube, axis=0)
 
     plt.figure(figsize=(8, 4))
     plt.ylim((0.5, 1))
     plt.xlim(0, 99500)
-    plt.xlabel("Instances processed", fontsize=12)
-    plt.ylabel("Balanced accuracy", fontsize=12)
+    # plt.xlabel("Instances processed", fontsize=12)
+    # plt.ylabel("Balanced accuracy", fontsize=12)
+    plt.ylabel("G-mean", fontsize=12)
 
     plt.yticks(
-        [0.5, 0.6, 0.7, 0.8, 0.9, 1],
-        ["50%", "60%", "70%", "80%", "90%", "100%"],
+        [0.4, 0.5, 0.6, 0.7, 0.8, 0.9],
+        ["40%", "50%", "60%", "70%", "80%", "90%"],
+        # [0.4, 0.5, 0.6, 0.7, 0.8],
+        # ["40%" ,"50%", "60%", "70%", "80%"],
         fontsize=12,
     )
 
@@ -96,45 +132,18 @@ def gather_and_present(title, filename, streams, what):
     ax.spines["left"].set_visible(False)
     for j, clfn in enumerate(clfs):
         clf = clfs[clfn]
-        plt.plot(score_points, overall[j], label=clfn)
+        plt.plot(score_points, overall[j], label=clfn, color=colors[j])
 
-    plt.legend(loc=9, ncol=6, columnspacing=1, frameon=False)
+    plt.legend(loc=9, ncol=4, columnspacing=1, frameon=False)
     plt.title(title, fontsize=16)
     plt.tight_layout()
     plt.savefig(filename + ".png")
-    # plt.savefig(filename + ".eps")
+    plt.savefig(filename + ".eps")
 
     a = np.swapaxes(results_hypercube, 1, 0)
-    res = np.reshape(a, (len(clfs), -1))
+    res = np.reshape(a, (n, -1))
 
-    return h.tabrow(what, res)
-
-
-# Compare drift types
-print("Drift types")
-text_file = open("rows/drift_types.tex", "w")
-for drift_type in drift_types:
-    streams = {}
-    for distribution in ldistributions:
-        for random_state in random_states:
-            for flip_y in label_noises:
-                stream = csm.StreamGenerator(
-                    drift_type=drift_type,
-                    distribution=distribution,
-                    random_state=random_state,
-                    flip_y=flip_y,
-                    n_drifts=5,
-                )
-                streams.update({str(stream): stream})
-
-    title = drift_type + " drift"
-    filename = "figures/experiment_%s" % drift_type
-    what = drift_type
-    tabrow = gather_and_present(title, filename, streams, what)
-    print(tabrow)
-    text_file.write(tabrow + "\n")
-text_file.close()
-
+    return h.tabrow_indices(what, res)
 
 # Compare distributions
 print("Distributions")
@@ -157,6 +166,31 @@ for distribution in distributions:
     what = "%.0f\\%%" % (distribution[0] * 100)
     filename = "figures/experiment_d%i" % int(distribution[0] * 100)
 
+    tabrow = gather_and_present(title, filename, streams, what)
+    print(tabrow)
+    text_file.write(tabrow + "\n")
+text_file.close()
+
+# Compare drift types
+print("Drift types")
+text_file = open("rows/drift_types.tex", "w")
+for drift_type in drift_types:
+    streams = {}
+    for distribution in ldistributions:
+        for random_state in random_states:
+            for flip_y in label_noises:
+                stream = csm.StreamGenerator(
+                    drift_type=drift_type,
+                    distribution=distribution,
+                    random_state=random_state,
+                    flip_y=flip_y,
+                    n_drifts=5,
+                )
+                streams.update({str(stream): stream})
+
+    title = drift_type + " drift"
+    filename = "figures/experiment_%s" % drift_type
+    what = drift_type
     tabrow = gather_and_present(title, filename, streams, what)
     print(tabrow)
     text_file.write(tabrow + "\n")

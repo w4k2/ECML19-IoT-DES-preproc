@@ -29,7 +29,7 @@ class DESlibStream(BaseEstimator, ClassifierMixin):
     """
 
     def __init__(
-        self, ensemble_size=10, alpha=0.05, desMethod="KNORAE", oversampler="SMOTE"
+        self, ensemble_size=20, alpha=0.05, desMethod="KNORAE", oversampler="SMOTE"
     ):
         """Initialization."""
         self.ensemble_size = ensemble_size
@@ -59,24 +59,24 @@ class DESlibStream(BaseEstimator, ClassifierMixin):
         # Return the classifier
         return self
 
-    def remove_outliers(self, X, y):
-        # Detect and remove outliers
-        out_clf = neighbors.KNeighborsClassifier(n_neighbors=6)
-        out_clf.fit(X, y)
-        out_pp = out_clf.predict_proba(X)
-
-        same_neighbors = (
-            (out_pp[tuple([range(len(y)), y])] - (1 / out_clf.n_neighbors))
-            * out_clf.n_neighbors
-        ).astype(int)
-
-        filter = same_neighbors > 3
-
-        # What if nothing left?
-        if len(np.unique(y[filter])) == 1:
-            filter[np.argmax(y == 0)] = True
-
-        return X[filter], y[filter]
+    # def remove_outliers(self, X, y):
+    #     # Detect and remove outliers
+    #     out_clf = neighbors.KNeighborsClassifier(n_neighbors=6)
+    #     out_clf.fit(X, y)
+    #     out_pp = out_clf.predict_proba(X)
+    #
+    #     same_neighbors = (
+    #         (out_pp[tuple([range(len(y)), y])] - (1 / out_clf.n_neighbors))
+    #         * out_clf.n_neighbors
+    #     ).astype(int)
+    #
+    #     filter = same_neighbors > 3
+    #
+    #     # What if nothing left?
+    #     if len(np.unique(y[filter])) == 1:
+    #         filter[np.argmax(y == 0)] = True
+    #
+    #     return X[filter], y[filter]
 
     def partial_fit(self, X, y, classes=None):
         """Partial fitting."""
@@ -95,9 +95,10 @@ class DESlibStream(BaseEstimator, ClassifierMixin):
         self.previous_X = self.X_
         self.previous_y = self.y_
 
-        train_X, train_y = self.remove_outliers(X, y)
-        # train_X, train_y = X, y
+        unique, counts = np.unique(y, return_counts=True)
 
+        # train_X, train_y = self.remove_outliers(X, y)
+        train_X, train_y = X, y
 
         unique, counts = np.unique(train_y, return_counts=True)
 
@@ -125,6 +126,8 @@ class DESlibStream(BaseEstimator, ClassifierMixin):
                 adasyn = ADASYN(random_state=42, n_neighbors=k_neighbors)
                 train_X, train_y = adasyn.fit_resample(train_X, train_y)
             except RuntimeError:
+                pass
+            except ValueError:
                 pass
         elif self.oversampler == "SLS" and k_neighbors>0:
             sls = Safe_Level_SMOTE(n_neighbors=k_neighbors)
@@ -191,6 +194,8 @@ class DESlibStream(BaseEstimator, ClassifierMixin):
                 adasyn = ADASYN(random_state=42, n_neighbors=k_neighbors)
                 X_dsel, y_dsel = adasyn.fit_resample(X_dsel, y_dsel)
             except RuntimeError:
+                pass
+            except ValueError:
                 pass
         elif self.oversampler == "SLS" and k_neighbors>0:
             sls = Safe_Level_SMOTE(n_neighbors=k_neighbors)

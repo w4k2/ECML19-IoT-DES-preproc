@@ -1,20 +1,12 @@
-"""
-Dumb Delay Pool.
-"""
-
 from sklearn.base import BaseEstimator, ClassifierMixin
 from sklearn.utils.validation import check_X_y, check_array, check_is_fitted
 from sklearn.utils.multiclass import _check_partial_fit_first_call
 from sklearn import base
-from sklearn import neighbors
 from sklearn.metrics import f1_score, balanced_accuracy_score
 from imblearn.metrics import  geometric_mean_score
 import numpy as np
-import matplotlib.pyplot as plt
 from deslib.des import KNORAE, KNORAU, DESKNN, DESClustering
-from deslib.dcs import Rank, LCA
-from imblearn.over_sampling import RandomOverSampler, SMOTE, SVMSMOTE, BorderlineSMOTE, ADASYN
-from scipy.spatial import distance
+from imblearn.over_sampling import SMOTE, SVMSMOTE, BorderlineSMOTE, ADASYN
 from smote_variants import Safe_Level_SMOTE
 from sklearn.tree import DecisionTreeClassifier
 
@@ -59,25 +51,6 @@ class DESlibStream(BaseEstimator, ClassifierMixin):
         # Return the classifier
         return self
 
-    # def remove_outliers(self, X, y):
-    #     # Detect and remove outliers
-    #     out_clf = neighbors.KNeighborsClassifier(n_neighbors=6)
-    #     out_clf.fit(X, y)
-    #     out_pp = out_clf.predict_proba(X)
-    #
-    #     same_neighbors = (
-    #         (out_pp[tuple([range(len(y)), y])] - (1 / out_clf.n_neighbors))
-    #         * out_clf.n_neighbors
-    #     ).astype(int)
-    #
-    #     filter = same_neighbors > 3
-    #
-    #     # What if nothing left?
-    #     if len(np.unique(y[filter])) == 1:
-    #         filter[np.argmax(y == 0)] = True
-    #
-    #     return X[filter], y[filter]
-
     def partial_fit(self, X, y, classes=None):
         """Partial fitting."""
         if not hasattr(self, "_base_clf"):
@@ -95,9 +68,6 @@ class DESlibStream(BaseEstimator, ClassifierMixin):
         self.previous_X = self.X_
         self.previous_y = self.y_
 
-        unique, counts = np.unique(y, return_counts=True)
-
-        # train_X, train_y = self.remove_outliers(X, y)
         train_X, train_y = X, y
 
         unique, counts = np.unique(train_y, return_counts=True)
@@ -148,15 +118,12 @@ class DESlibStream(BaseEstimator, ClassifierMixin):
         # Preparing and training new candidate
         self.ensemble_.append(base.clone(self._base_clf).fit(train_X, train_y))
 
-        # print(len(self.ensemble_))
 
     def ensemble_support_matrix(self, X):
         """ESM."""
         return np.array([member_clf.predict_proba(X) for member_clf in self.ensemble_])
 
     def predict(self, X):
-        """Hard decision."""
-        # print("PREDICT")
         # Check is fit had been called
         check_is_fitted(self, "classes_")
 
@@ -223,16 +190,3 @@ class DESlibStream(BaseEstimator, ClassifierMixin):
 
     def score(self, X, y):
         return ba(y, self.predict(X)), f1(y, self.predict(X)), gmean(y, self.predict(X))
-
-    def manhattan_distance(self, X1, X2):
-        """Manhattan distance from each new instance in X1 to the X2 instances"""
-        return np.array([np.sum(np.absolute(X2 - instance), axis=1) for instance in X1])
-
-    def euclidean_distance(self, X1, X2):
-        """Euclidean distance from each new instance in X1 to the X2 instances"""
-        return np.sqrt(np.array([np.sum((- X2 + instance)**2, axis=1) for instance in X1]))
-
-    def region_of_competence(self, distance_matrix, n_neighbors=5):
-        """ Region of competence based on given
-        distance from each new instance to the previous chunk"""
-        return np.argsort(distance_matrix)[:, :n_neighbors]

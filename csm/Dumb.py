@@ -10,7 +10,6 @@ from sklearn import neighbors
 from sklearn.metrics import f1_score, balanced_accuracy_score
 from imblearn.metrics import  geometric_mean_score
 import numpy as np
-import matplotlib.pyplot as plt
 from imblearn.over_sampling import SMOTE, SVMSMOTE, BorderlineSMOTE, ADASYN
 from smote_variants import Safe_Level_SMOTE
 from sklearn.tree import DecisionTreeClassifier
@@ -21,17 +20,6 @@ gmean = geometric_mean_score
 
 
 class Dumb(BaseEstimator, ClassifierMixin):
-    """
-    DumbDelayPool.
-
-    Opis niezwykle istotnego klasyfikatora
-
-    References
-    ----------
-    .. [1] A. Kowalski, B. Nowak, "Bardzo ważna praca o klasyfikatorze
-    niezwykle istotnym dla przetrwania gatunku ludzkiego."
-
-    """
 
     def __init__(self, ensemble_size=20, alpha=0.05, oversampler = "None"):
         """Initialization."""
@@ -61,25 +49,6 @@ class Dumb(BaseEstimator, ClassifierMixin):
         # Return the classifier
         return self
 
-    def remove_outliers(self, X, y):
-        # Detect and remove outliers
-        out_clf = neighbors.KNeighborsClassifier(n_neighbors=6)
-        out_clf.fit(X, y)
-        out_pp = out_clf.predict_proba(X)
-
-        same_neighbors = (
-                (out_pp[tuple([range(len(y)), y])] - (1 / out_clf.n_neighbors))
-                * out_clf.n_neighbors
-        ).astype(int)
-
-        filter = same_neighbors > 3
-
-        # What if nothing left?
-        if len(np.unique(y[filter])) == 1:
-            filter[np.argmax(y == 0)] = True
-
-        return X[filter], y[filter]
-
     def partial_fit(self, X, y, classes=None):
         """Partial fitting."""
         if not hasattr(self, "_base_clf"):
@@ -92,8 +61,7 @@ class Dumb(BaseEstimator, ClassifierMixin):
 
         self.X_, self.y_ = X, y
 
-        train_X, train_y = self.remove_outliers(X, y)
-        # train_X, train_y = X, y
+        train_X, train_y = X, y
 
         unique, counts = np.unique(train_y, return_counts=True)
 
@@ -132,7 +100,6 @@ class Dumb(BaseEstimator, ClassifierMixin):
         # Pruning
         if len(self.ensemble_) > 1:
             alpha_good = scores > (0.5 + self.alpha)
-            # print(scores)
             self.ensemble_ = [self.ensemble_[i] for i in np.where(alpha_good)[0]]
 
         if len(self.ensemble_) > self.ensemble_size - 1:
@@ -142,17 +109,12 @@ class Dumb(BaseEstimator, ClassifierMixin):
         # Preparing and training new candidate
         self.ensemble_.append(base.clone(self._base_clf).fit(train_X, train_y))
 
-        # print("ENSEMBLE OF ", len(self.ensemble_))
-
-        # print(len(self.ensemble_))
-
     def ensemble_support_matrix(self, X):
         """ESM."""
         return np.array([member_clf.predict_proba(X) for member_clf in self.ensemble_])
 
     def predict(self, X):
         """Hard decision."""
-        # print("PREDICT")
         # Check is fit had been called
         check_is_fitted(self, "classes_")
 
